@@ -1,0 +1,9 @@
+---
+title: "2026-01-29"
+format: html
+---
+
+f <- "https://raw.githubusercontent.com/difiore/ada-datasets/refs/heads/main/Country-Data-2016.csv"
+d <- read.csv(f)
+ncol(d)
+nrow(d)

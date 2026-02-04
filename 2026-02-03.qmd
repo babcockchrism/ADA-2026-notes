@@ -1,0 +1,44 @@
+---
+title: "2026-02-03"
+format: html
+---
+
+library(tidyverse)
+f <- "https://raw.githubusercontent.com/difiore/ada-datasets/main/KamilarAndCooperData.csv"
+d <- read_csv(f, col_names = TRUE) # creates a "tibble"
+head(d)
+tail(d)
+str(d)
+glimpse(d)
+dim(d)
+names(d)
+ # $ notation cannot have spaces in the name (can get around this by putting column name in ""); [[]] notation can use spaces without a problem, though (not recommended to work with according to Tony)
+attach(d) # puts dataframe into the "namespace" in R; no longer need to use $ or [[]] notation for that dataframe
+mean(Brain_Size_Female_Mean, na.rm = TRUE) # na.rm removes blank (i.e. "NA") values
+detach(d)
+mean(Brain_Size_Female_Mean, na.rm = TRUE)
+with(d, mean(Brain_Size_Female_Mean, na.rm = TRUE))
+summary(d)
+library(skimr)
+skim(d)
+stripchart(log(d$Body_mass_female_mean))
+boxplot(log(d$Body_mass_female_mean))
+stripchart(log(d$Body_mass_female_mean), method = "jitter", col = "blue", vertical = TRUE, add = TRUE) # or method = "overplot"
+boxplot(data = d, log(Body_mass_female_mean) ~ Family)
+stripchart(log(d$Body_mass_female_mean) ~ d$Family, method = "jitter", col = "blue", vertical = TRUE, add = TRUE)
+ # ggplot(data = ..., mapping = aes(...)) + geom_...(...) + theme(...) + ...
+p <- ggplot(data = d, aes(x = Family, y = log(Body_mass_female_mean))) + geom_boxplot(na.rm = TRUE)
+p
+p <- p + geom_jitter(color = "blue", width = 0.1)
+p
+p <- p + theme(axis.text.x = element_text(angle = 90))
+p
+p <- p + ylab("log(Female Body Mass)")
+p
+hist(log(d$Body_mass_female_mean))
+hist(log(d$Body_mass_female_mean), freq = FALSE)
+lines(density(log(d$Body_mass_female_mean), na.rm = TRUE), col = "blue), col = "red") # doesn't work for some reason???
+p <- ggplot(data = d, aes(log(Body_mass_female_mean)))
+plot(x = log(d$Body_mass_female_mean), y = log(d$Brain_Size_Female_Mean))
+p <- ggplot(data = d, aes(x = log(Body_mass_female_mean), y = log(Brain_Size_Female_Mean)))
+p

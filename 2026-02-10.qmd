@@ -1,0 +1,135 @@
+---
+title: "2026-02-10"
+format: html
+---
+
+``` {r}
+library(tidyverse)
+f <- "https://raw.githubusercontent.com/difiore/ada-datasets/refs/heads/main/IMDB-movies.csv"
+d <- read_csv(f, col_names = TRUE)
+d
+```
+
+``` {r}
+names(d)
+```
+
+``` {r}
+unique(d$genres)
+```
+
+``` {r}
+d <- d %>%
+  mutate(
+    comedy = str_detect(genres, "Comedy")
+  )
+d$comedy # boolean for whether a given movie has "Comedy" as a genre
+```
+
+``` {r}
+sum(d$comedy, na.rm = TRUE) # counts number of movies that have "Comedy" as a genre
+```
+
+``` {r}
+d <- d %>%
+  mutate(
+    ranking = case_when(
+      averageRating < 3.3 ~ "low",
+      averageRating < 6.7 ~ "med",
+      averageRating <= 10.0 ~ "high"
+    )
+  )
+d$ranking
+```
+
+``` {r}
+s <- d %>%
+  group_by(
+    ranking
+  ) %>%
+  summarise(count = n(),
+            avgRuntime = mean(
+              runtimeMinutes,
+              na.rm = TRUE
+              )
+            ) # counts number of movies that occur in each ranking and the average runtime for each ranking
+s
+```
+
+``` {r}
+r <- 0
+for(i in 1:nrow(d))
+  if(!is.na(d$runtimeMinutes[i]))
+    r <- r + d$runtimeMinutes[i] # counts summed up number of runtime minutes in the dataframe
+r
+```
+
+``` {r}
+papers <- "https://raw.githubusercontent.com/difiore/ada-datasets/refs/heads/main/papers.csv"
+p <- read_csv(papers, col_names = TRUE)
+p
+```
+
+``` {r}
+author <- tibble(
+  fullName = c(
+    "Abbot, David"
+    ),
+  lastName = "Abbott",
+  firstName = "David"
+)
+author
+```
+
+``` {r}
+inner_join(
+  p,
+  author,
+  by = c(
+    "First Author Last Name" = "lastName",
+    "First Author First Name" = "firstName"
+  )
+) # akin to a search function(?), prints only  the row that has all the info found in the tibble
+```
+
+``` {r}
+inner_join(
+  author,
+  p,
+  by = c(
+    "lastName" = "First Author Last Name",
+    "firstName" = "First Author First Name"
+  )
+) # same output as above
+```
+
+``` {r}
+p <- p %>%
+  separate_wider_delim(
+    cols = Author,
+    delim = ";",
+    names = c(
+      "First Author",
+      "A2",
+      "A3",
+      "A4"
+    ),
+    too_few = "align_start",
+    too_many = "drop"
+  ) %>%
+  mutate(
+    A2 = str_trim(
+      `A2`,
+      "both"
+    ),
+    A3 = str_trim(
+      `A3`,
+      "both"
+    ),
+    A4 = str_trim(
+      `A4`,
+      "both"
+    )
+  ) # separates authors column into individual authors
+p
+```

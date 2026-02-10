@@ -1,0 +1,92 @@
+---
+title: "2026-02-05"
+format: html
+---
+
+# Class 7
+
+``` {r}
+library(tidyverse)
+f <-"https://raw.githubusercontent.com/difiore/ada-datasets/main/KamilarAndCooperData.csv"
+d <- read_csv(f, col_names = TRUE)
+
+p <- ggplot(data = d,
+            aes(x = log(Body_mass_female_mean),
+                y = log(Brain_Size_Female_Mean)
+                )
+            ) + 
+  geom_point()
+p
+```
+
+``` {r}
+s <- d[d$Family == "Hominidae"]
+s 
+```
+
+``` {r}
+s <- d[, c("Family", "Genus", "Body_mass_male_mean")]
+s <- select(d, Family, Genus, Body_mass_male_mean) # loads columns(???)
+s
+```
+
+``` {r}
+s <- d[order(d$Family, d$Genus, -d$Body_mass_male_mean),]
+s <- arrange(d, Family, Genus, desc(Body_mass_male_mean)) # arranges rows, prioritizing the columns you mention first
+s
+```
+
+``` {r}
+s <- aggregate(
+  d$Body_mass_female_mean ~ d$Family,
+  FUN = "mean", na.rm = TRUE
+) # only looks at overall families and the average mean body mass within each family
+s
+```
+
+``` {r}
+s <- summarize(
+  group_by(d, Family),
+  avgF = mean(Body_mass_female_mean, na.rm = TRUE)
+) # another way of doing the above
+s
+```
+
+``` {r}
+d$Taxonomy <- paste0(d$Family, " ", d$Genus) # simpler(?) way of doing this than what I was doing with paste() in exercise 03
+d$Taxonomy
+```
+
+``` {r}
+d <- d |> mutate(Taxonomy = paste0(Family, "-", Genus, "-", Species))
+d$Taxonomy # dplyr version of the above
+```
+
+``` {r}
+d <- d |> relocate(Taxonomy) # relocates column to front
+d <- d |> relocate(Taxonomy, .after = Species) # after Species
+d <- d |> relocate(Taxonomy, .before = Superfamily) # before Superfamily
+d <- d |> select(Taxonomy, everything()) # another way of relocating column to front
+```
+
+``` {r}
+f <- "https://raw.githubusercontent.com/difiore/ada-datasets/refs/heads/main/IMDB-movies.csv"
+d <- read_csv(f, col_names = TRUE)
+d
+```
+
+``` {r}
+d <- d %>%
+  mutate(
+    data = d,
+    comedy = if_else(
+      str_detect(
+        genres,
+        "Comedy"
+      ),
+      TRUE,
+      FALSE,
+    )
+  )
+d$comedy
+```

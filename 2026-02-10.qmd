@@ -3,6 +3,8 @@ title: "2026-02-10"
 format: html
 ---
 
+# Class 8
+
 ``` {r}
 library(tidyverse)
 f <- "https://raw.githubusercontent.com/difiore/ada-datasets/refs/heads/main/IMDB-movies.csv"
@@ -63,6 +65,8 @@ for(i in 1:nrow(d))
     r <- r + d$runtimeMinutes[i] # counts summed up number of runtime minutes in the dataframe
 r
 ```
+
+## Joins
 
 ``` {r}
 papers <- "https://raw.githubusercontent.com/difiore/ada-datasets/refs/heads/main/papers.csv"

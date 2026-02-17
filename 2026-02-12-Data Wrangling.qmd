@@ -1,0 +1,86 @@
+---
+title: "2026-02-12 Data Wrangling"
+format: html
+---
+
+``` {r}
+library(tidyverse)
+library(fuzzyjoin)
+gps <- read_csv("https://raw.githubusercontent.com/difiore/ada-datasets/refs/heads/main/sample_gps_data.csv", col_names = TRUE)
+beh <- read_csv("https://raw.githubusercontent.com/difiore/ada-datasets/refs/heads/main/sample_spider_monkey_data.csv", col_names = TRUE)
+```
+
+```{r}
+gps
+```
+
+``` {r}
+beh
+```
+
+``` {r}
+gps <- gps %>%
+  separate_wider_delim(
+    cols = Date.Time,
+    delim = c(
+      "-"
+    ),
+    names = c(
+      "Year",
+      "Month",
+      "Day"
+    ),
+    too_few = "align_start",
+    too_many = "drop"
+  ) %>%
+  mutate(
+    Year = str_trim(
+      `Year`,
+      "both"
+    ),
+    Month = str_trim(
+      `Month`,
+      "both"
+    ),
+    Day = str_trim(
+      `Day`,
+      "both"
+    )
+  )
+gps
+```
+
+``` {r}
+beh <- beh %>%
+  separate_wider_delim(
+    cols = Date.Time,
+    delim = "-",
+    names = c(
+      "Year_",
+      "Month_",
+      "Day_"
+    ),
+    too_few = "align_start",
+    too_many = "drop"
+  ) %>%
+  mutate(
+    Year_ = str_trim(
+      `Year_`,
+      "both"
+    ),
+    Month_ = str_trim(
+      `Month_`,
+      "both"
+    ),
+    Day_ = str_trim(
+      `Day_`,
+      "both"
+    )
+  )
+beh
+```
+
+``` {r}
+beh_2012_2014 <- beh %>% filter(Year == c(2012, 2013, 2014))
+beh_2012_2014
+```

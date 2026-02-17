@@ -1,0 +1,111 @@
+---
+title: "2026-02-12"
+format: html
+---
+
+# Class 9
+
+## Joins
+
+``` {r}
+library(tidyverse)
+papers <- "https://raw.githubusercontent.com/difiore/ada-datasets/refs/heads/main/papers.csv"
+p <- read_csv(papers, col_names = TRUE)
+p
+```
+
+``` {r}
+author <- tibble(
+  fullName = c(
+    "Abbot, David"
+    ),
+  lastName = "Abbott",
+  firstName = "David"
+)
+author
+```
+
+``` {r}
+inner_join(
+  p,
+  author,
+  by = c(
+    "First Author Last Name" = "lastName",
+    "First Author First Name" = "firstName"
+  )
+) # akin to a search function(?), prints only  the row that has all the info found in the tibble
+```
+
+``` {r}
+inner_join(
+  author,
+  p,
+  by = c(
+    "lastName" = "First Author Last Name",
+    "firstName" = "First Author First Name"
+  )
+) # same output as above
+```
+
+``` {r}
+p <- p %>%
+  separate_wider_delim(
+    cols = Author,
+    delim = ";", # what character is used to separate authors?
+    names = c(
+      "First Author", # new column names for individual authors
+      "A2",
+      "A3",
+      "A4"
+    ),
+    too_few = "align_start",
+    too_many = "drop" # ignores any authors beyond the first four
+  ) %>%
+  mutate(
+    A2 = str_trim(
+      `A2`,
+      "both" # removes quotation marks???
+    ),
+    A3 = str_trim(
+      `A3`,
+      "both"
+    ),
+    A4 = str_trim(
+      `A4`,
+      "both"
+    )
+  ) # separates authors column into individual authors
+p
+```
+
+``` {r}
+library(fuzzyjoin)
+author <- tibble(partialName = c("Abbott, D"))
+inner_fuzzy <- regex_inner_join(p, author, by = c("First Author" = "partialName")) # searching for anything containing the partial name???
+inner_fuzzy
+```
+
+## Defining Custom Functions
+
+``` {r}
+my_function <- function(<argument list>){
+  <<function code>>
+    return(<value>)
+}
+```
+
+``` {r}
+my_print_reps <- function(x, reps = 2){
+  for(i in 1:reps){
+    print(x) # prints the entire input dataframe unmodified "reps" amount of times
+  }
+  for(i in 1:nrow(x)){
+    print(x[i,]) # prints each row of the dataframe one row at a ime
+  }
+  return(NULL) # if you assign the function's result to a variable, the variable will be null
+}
+```
+
+``` {r}
+my_print_reps(author)
+```

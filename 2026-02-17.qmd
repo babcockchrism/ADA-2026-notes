@@ -1,0 +1,212 @@
+---
+title: "2026-02-17"
+format: html
+---
+
+# Part II: Statistics and Inference
+
+``` {r}
+install.packages(c("mosaic", "radiant", "moments"))
+```
+
+Population vs sample: a sample is a set of observations on a population, and is hopefully representative of the population
+
+Parameter vs statistic: parameter describes the population while statistic describes the sample
+
+A statistic is a function of the data alone
+
+## Statistics--Key Ideas
+
+Location: mean, median, mode harmonic mean
+
+Spread: mean deviation (average of absolute values of deviations from median), mean squared deviation (average of squared deviations from mean) (AKA variance), standard deviation (square root of variance)
+
+### Spread
+
+Population variance = a *parameter* = SS/N = sigma^2 (N = population size)
+
+Sample variance = a *statistic* - SS/(n-1) = s^2 (n = sample size)
+
+Population standard deviation = a *parameter* = sigma
+
+Sample standard deviation = a *statistic* = s
+
+### Shape
+
+Skewness characterizes the asymmetry of the distribution
+
+Kurtosis characterizes the peakedness or flatness of a distribution (compared to normal)
+
+## Challenge
+
+``` {r}
+pop.var <- function(vals) {
+  mean <- mean(vals);
+  SS <- sum((vals-mean)^2);
+  N <- length(vals);
+  V <- SS/N;
+  return(V)
+}
+pop.var(c(1,2,3,4,5,6,7,8,9))
+```
+
+``` {r}
+samp.var <- function(vals) {
+  mean <- mean(vals);
+  SS <- sum((vals-mean)^2);
+  n <- length(vals);
+  v <- SS/(n-1);
+  return(v)
+}
+samp.var(c(1,2,3,4,5,6,7,8,9))
+```
+
+``` {r}
+skew <- function(vals) {
+  sum(((vals-mean(vals))/sd(vals))^3)/(length(vals)-1)
+}
+skew(c(1,2,3,4,5,6,7,8,9))
+```
+
+``` {r}
+kurt <- function(vals) {
+  sum(((vals-mean(vals))/sd(vals))^4)/(length(vals)-1)
+}
+kurt(c(1,2,3,4,5,6,7,8,9))
+```
+
+### Spread
+
+var() is sample variance
+
+radiant::sdpop() is population standard deviation
+
+moments::skewness(x) is skew (beware, incorporates a kind of "bias correction")
+
+draw a sample from some standard mathematical distributions and see how statistics we calculate about them compare to parameters of those disrtibutions...
+
+Normal distribution:
+
+``` {r}
+library(mosaic)
+mu <- 10 # for "mean" parameter
+sigma <- 2 # for "sd" parameter
+plotDist("norm", mean = mu, sd = sigma, xlab = "x", ylab = "frequency")
+```
+
+``` {r}
+s1 <- rnorm(n = 10, mean = 10, sd = 2)
+histogram(s1)
+```
+
+``` {r}
+mean(s1)
+```
+
+``` {r}
+sd(s1)
+```
+
+``` {r}
+moments::skewness(s1)
+```
+
+``` {r}
+moments::kurtosis(s1)
+```
+
+``` {r}
+s2 <- rnorm(n = 10000, mean = 10, sd = 2)
+histogram(s2)
+```
+
+``` {r}
+mean(s2)
+```
+
+``` {r}
+sd(s2)
+```
+
+``` {r}
+moments::skewness(s2)
+```
+
+``` {r}
+moments::kurtosis(s2)
+```
+``` {r}
+s <- rf(n = 10000, df1 = 5, df2 = 20)
+histogram(s)
+```
+
+``` {r}
+mean(s)
+```
+
+``` {r}
+sd(s)
+```
+
+``` {r}
+moments::skewness(s)
+```
+
+``` {r}
+moments::kurtosis(s)
+```
+
+``` {r}
+library(mosaic)
+plotDist("beta", shape1 = shape1, shape2 = shape2, col = "purple", lwd = 5)
+```
+
+### Sampling distribution of a statistic
+
+A set of possible statistics... etc etc???
+
+``` {r}
+reps <- 500 # number of times to sample from a random normal distribution
+samp_dist_mean <- do(reps) * mean(rnorm(n = 10, mean = 10, sd = 2)) # "*" lets you do a calculation a bunch of times; kind of works like a loop function
+str(samp_dist_mean)
+View(samp_dist_mean)
+```
+
+``` {r}
+histogram(samp_dist_mean$mean)
+```
+
+``` {r}
+sd(samp_dist_mean$mean)
+```
+
+``` {r}
+reps <- 500 # number of times to sample from a random normal distribution
+sdm <- do(reps) * mean(rnorm(n = 10000, mean = 10, sd = 2)) # "*" lets you do a calculation a bunch of times; kind of works like a loop function
+str(sdm)
+View(sdm)
+```
+
+``` {r}
+histogram(sdm$mean)
+```
+
+``` {r}
+sd(sdm$mean)
+```
+
+### Standard Error
+
+A measure of reliability/unreliability
+
+Standard error (SE) = sqrt(sample variance) = standard deviation of a sampling distribution
+
+``` {r}
+se_mean <- sd(samp_dist_mean$mean)
+se_mean
+```
+
+``` {r}
+se_median <- sd(samp_dist_mean$median)
+se_median
+```

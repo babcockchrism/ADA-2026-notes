@@ -1,0 +1,128 @@
+---
+title: "2026-02-26"
+format: html
+---
+
+## Confidence Intervals
+
+The SE can be used to derive CI (another way of describing a statistic's sampling distribution and it plays a central role in basic inferential statistics)
+
+An interval around our estimate of mean of the sampling distribution for a particular statistic (typically a mean), and it gives us a range of values into which subsequent estimates of a statistic would be expected to fall some critical proportion of the time, if the sampling exercise were to be repeated
+
+### Calculating Confidence Intervals
+
+Theoretical confidence intervals (which are based on distributions with known mathematical properties) represent the range of values corresponding 
+
+the value of the statistic +- critical balue * the standard error of the statistic
+
+mean +- critical value * SE
+
+CI = point estimare +- critical value x SE (critical value = how many standard deviations we're going based on % confidence??? So a 95%  confidence interval looks at 1.959964 standard deviations or SE's away from the mean??? (calculated via qnorm))
+
+What is the theoretical 95% CI around the estimare of the mean of the following vector:
+
+``` {r}
+x <- c(2.9, 4.8, 8.9, -3.2, 9.1, -2.5, -0.9, -0.1, 2.8, -1.7)
+m <- mean(x)
+se <- sd(x)/sqrt(length(x))
+ci <- m +qnorm(c(0.025, 0.975)) * se # or we can do it this way:
+ci <- m + c(-1, 1) * qnorm(0.975) * se
+```
+
+## CI's for small sample sizes...
+
+For n<30, use things like student's t distribution
+
+Yher choice of the appropriate t distribution to use in any particular statistical test is based on the number of degrees of freedom (df), i.e., the number of individual components in the calculation of a 
+
+``` {r}
+n_boot <-  10000
+boot <- vector()
+n <- length(x)
+for(i in 1:n_boot) {
+  boot[[i]] <- 
+}
+boot <- do(n_boot) * 
+```
+
+## Estimating confidence intervals (redux)...
+
+### If we know complete population...
+
+Based on population mean, population SD, and sample size (to calculate expected SE) using qnorm()
+
+``` {r}
+ci <- popmean + qnorm(c(0.025, 0.975) * popSD/sqrt(n))
+```
+
+### If we can take multiple samples from the population...
+
+Based on SD of sampling distribution (to estimate SE) using qnorm()
+
+``` {r}
+ci <- samplemean + qnorm(c(0.025, 0.975) * sd(samplingdistribution))
+```
+
+Directly from sampling distribution using quantile()
+
+``` {r}
+
+```
+
+# Class 12: Hypothesis Testing
+
+## 33 Null Hypothesis Significance Testing
+
+Classical hypothesis testing typically involves formally stating a claim - the null hypothesis - which is then folllowed up by statistical evaluation of the null versus and alternative hypothesis.
+
+The null hypothesis is interpreted as a baseline hypothesis and is the claim that is presumed to be true. That claim is typically that a particular value of a population parameter estimated by a sample statistic we have calculated is consistent with a particular null expectation. The alternative hypothesis is the conjecture that we are testing, usually that the sample statistic is inconsistent with a null expectation.
+
+Typically, our null and alternative hypotheses are expressed something like as follows:
+
+  
+## To implement a hypothesis test, we need to...
+
+Calculate a test statistic based on our data.
+
+Calculate the p value assoc
+
+In traditional parametric statistics, we make the assumption that the sampling distribution of our statistic of interest (e.g. a mean) talkes the form of a particular
+
+## Process:
+
+Specify the sample statistic we want to evaluate (e.g. the mean).
+
+Specify the test statistic of interest and the form of the dsampling distriution for htat statistic (e.g. Z or T ans standard norma or T distribution for aprametric statistical tests).
+
+T = (mean - se)/(se)
+
+Calculate the tail probabiltiy 
+
+``` {r}
+f <- "https://raw.githubusercontent.com/difiore/ada-datasets/refs/heads/main/woolly-weights.csv"
+d <- read.csv(f)
+head(d)
+m <- mean(d$weight)
+sd <- sd(d$weight)
+se <- sd/sqrt(length(d$weight))
+t <- (m - 7.2)/se
+ci <- m + c(-1, 1) * qnorm(0.975) * se # our sample mean is not within the 95% CI of the population; this means the p value calculated from the t statistic is likely to be <0.05
+```
+
+
+
+``` {r}
+
+```
+
+
+
+``` {r}
+
+```
+
+
+
+``` {r}
+
+```

@@ -1,0 +1,203 @@
+---
+title: "2026-02-24"
+format: html
+---
+
+## What is a sampling distribution?
+
+### Sampling distribution of a statistic
+
+### Estimating SE from a single sample
+
+We can estimate the SE associated with samples of size n from a single sample of size n as the standard deviation of the sample divided by the square root of the sample size...
+
+``` {r}
+x <- rnorm(n = 10, mean = 10, sd = 2)
+se <- sd(x)/sqrt(length(x))
+print(x)
+print(se)
+```
+
+### What happens to the spread of the sampling distribution, and thus to the SE, as the size of our samples increases? (e.g., change n = 10 to n = 1000)?
+
+``` {r}
+library(mosaic)
+
+reps <- 1000
+samp_dist_mean <- do(reps) * mean(rnorm(n = 1000, mean = 10, sd = 2))
+histogram(~mean, data = samp_dist_mean)
+se_mean <- sd(samp_dist_mean$mean)
+```
+
+``` {r}
+reps <- 1000
+samp_dist_median <- do(reps) * median(rnorm(n = 1000, mean = 10, sd = 2))
+histogram(~median, data = samp_dist_median)
+se_median <- sd(samp_dist_median$median)
+```
+
+``` {r}
+reps <- 1000
+samp_dist_sd <- do(reps) * sd(rnorm(n = 1000, mean = 10, sd = 2))
+histogram(~sd, data = samp_dist_sd)
+se_sd <- sd(samp_dist_sd$sd)
+```
+
+## Estimating standard error in a sample... 3 ways
+
+### If true population variance is known (rare)...
+
+(standard deviation of population)/sqrt(sample size)
+
+### If we can sample population repeatedly to generate a sampling distribution...
+
+Standard deviation of sampling distrpbution
+
+### If we 
+
+``` {r}
+s <- rnorm(10, mean = 0, sd = 1)
+sd(s)/sqrt(length(s))
+```
+
+# Class 11: Playing with Distributions
+
+``` {r}
+r <- rnorm(100, mean = 2, sd = 4)
+cat("mean: ", mean(r))
+cat("standard deviation: ", sd(r))
+cat("standard error: ", sd(r)/sqrt(length(r)))
+cat("expected standard error: ", 4/sqrt(100))
+```
+
+## Now repeat this 1000 etc times to get a sampling distribution
+
+``` {r}
+reps <- 1000
+sdm <- do(reps) * mean(rnorm(n = 100, mean = 2, sd = 4))
+cat("sampling distribution mean: ", mean(sdm$mean), "\n")
+cat("standard error: ", sd(sdm$mean), "\n")
+```
+
+## Repeat this using a t distribution
+
+``` {r}
+plotDist("t", df = 100, xlab = "x", ylab = "Frequency", col = "red")
+```
+
+``` {r}
+plotDist("t", df = 50, xlab = "x", ylab = "Frequency", col = "red")
+```
+
+``` {r}
+plotDist("t", df = 25, xlab = "x", ylab = "Frequency", col = "red")
+```
+
+``` {r}
+plotDist("t", df = 12, xlab = "x", ylab = "Frequency", col = "red")
+```
+
+``` {r}
+plotDist("t", df = 6, xlab = "x", ylab = "Frequency", col = "red")
+```
+
+``` {r}
+plotDist("t", df = 3, xlab = "x", ylab = "Frequency", col = "red")
+```
+
+``` {r}
+plotDist("t", df = 1, xlab = "x", ylab = "Frequency", col = "red")
+```
+
+``` {r}
+plotDist("t", df = 100, xlab = "x", ylab = "Frequency", col = "red")
+plotDist("t", df = 50, xlab = "x", ylab = "Frequency", col = "red", add = TRUE)
+plotDist("t", df = 25, xlab = "x", ylab = "Frequency", col = "red", add = TRUE)
+plotDist("t", df = 12, xlab = "x", ylab = "Frequency", col = "red", add = TRUE)
+plotDist("t", df = 6, xlab = "x", ylab = "Frequency", col = "red", add = TRUE)
+plotDist("t", df = 3, xlab = "x", ylab = "Frequency", col = "red", add = TRUE)
+plotDist("t", df = 1, xlab = "x", ylab = "Frequency", col = "red", add = TRUE)
+```
+
+``` {r}
+rnorm(n = 100, mean = 2, sd = 4, ncp = 2)
+```
+
+## Repeat this exercise again using a beta distribution
+
+``` {r}
+plotDist("beta", shape1 = 2, shape2 = 4, xlab = "x", xlim = c(0,1), ylab = "Frequency", col = "red")
+```
+
+``` {r}
+plotDist("beta", shape1 = 1, shape2 = 1, xlab = "x", xlim = c(0,1), ylab = "Frequency", col = "red")
+```
+
+``` {r}
+plotDist("beta", shape1 = 0.5, shape2 = 2, xlab = "x", xlim = c(0,1), ylab = "Frequency", col = "red")
+```
+
+``` {r}
+plotDist("beta", shape1 = 2, shape2 = 2, xlab = "x", xlim = c(0,1), ylab = "Frequency", col = "red")
+```
+
+``` {r}
+plotDist("beta", shape1 = 4, shape2 = 2, xlab = "x", xlim = c(0,1), ylab = "Frequency", col = "red")
+```
+
+``` {r}
+plotDist("beta", shape1 = 0.5, shape2 = 0.5, xlab = "x", xlim = c(0,1), ylab = "Frequency", col = "red")
+```
+
+``` {r}
+plotDist("beta", shape1 = 2, shape2 = 0.5, xlab = "x", xlim = c(0,1), ylab = "Frequency", col = "red")
+```
+
+``` {r}
+reps <- 1000
+b <- do(reps) * mean(rbeta(n = 100, shape1 = 0.3, shape2  = 4))
+cat("mean: ", mean(b$mean), "\n")
+cat("standard deviation: ", sd(b$mean), "\n")
+cat("standard error: ", sd(b$mean)/sqrt(length(b$mean)), "\n")
+cat("expected SE: ")
+histogram(~mean, data = b)
+```
+
+## Key Functions for Distributions
+
+r_(n = ) draws random samples of size n from a given distribution
+
+p_(q = ) returns the quantile associated with a given value of X; i.e., returns the value of the cumulative density function up to that value of
+
+q_(p = ) returns the value of X at a given quantile through the distribution; i.e., returns the value of the inverse cumulative density dunction (cdf)
+
+d_(x = ) returns the value of the probability density function (pdf) at the values of x
+
+What values of X are associated with the 0.025 and 0.975 quantiles of a standard normal distribution (which woudl be the boundaries of the central 95% of a given distribution)?
+
+``` {r}
+qnorm(p = c(0.025, 0.975), mean = 0, sd = 1)
+```
+
+What values of X are associated with the .0025 and 0.975 quantiles of a beta distribution with shape1 = 2 and shape2 = 4?
+
+``` {r}
+qbeta(p = c(0.025, 0.975), shape1 = 2, shape2 = 4)
+```
+
+``` {r}
+lower <- qbeta(0.025, shape1 = 2, shape2 = 4)
+upper <- qbeta(0.975, shape1 = 2, shape2 = 4)
+curve(dbeta(x, shape1 = 2, shape2 = 4), from = 0, to = 1, lwd = 2)
+x <- seq(lower, upper, length = 500)
+polygon(c(lower, x, upper), c(0, dbeta(x, shape1 = 2, shape2 = 4), 0), col = "lightblue")
+abline(v = c(lower, upper), col = "red", lwd = 2)
+```
+
+``` {r}
+pbeta(q = 0.2, shape1 = 2, shape2 = 4)
+```
+
+``` {r}
+qbeta(p = 0.5, shape1 = 2, shape2 = 4)
+```

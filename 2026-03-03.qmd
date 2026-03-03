@@ -1,0 +1,115 @@
+---
+title: "2026-03-03"
+format: html
+---
+
+## One Sample T test
+
+T = (mean - expectation)/(standard error)
+
+``` {r}
+ci <- m + qt(p = c(0.025, 0.975), ncp = 0, df = n - 1) * se
+```
+
+Does CI include the expected mean? NO
+
+What is the two-tailed probability of getting a statistic as far away from the expected value (0) as it is by chance?
+
+Because this is a two-tailed test, we need to calculated the probability of seeing a T statistic as far from the mean in either the positive or negative direction. So, we sum the probabilities associated with the upper and lower tails...
+
+``` {r}
+library(mosaic)
+f <- "https://raw.githubusercontent.com/difiore/ada-datasets/refs/heads/main/woolly-weights.csv"
+d <- read.csv(f)
+```
+
+``` {r}
+m <- mean(d$weight)
+se <- sd/sqrt(length(d$weight))
+mu <- 7.2
+t_stat <- (m-mu)/se
+n <- length(d$weight)
+```
+
+``` {r}
+ci <- m + qt(p = c(0.025, 0.975), ncp = 0, df = n - 1) * se
+p_lower <- pt(-1 * abs(t_stat), df = n - 1)
+p_upper <- pt(1 * abs(t_stat), df = n-1)
+p <- c(p_lower, p_upper)
+```
+
+## Programming Exercise: A Two-Sample T test
+
+``` {r}
+d <- read.csv("https://raw.githubusercontent.com/difiore/ada-datasets/refs/heads/main/tbs-2006-2008-ranges.csv")
+s <- d %>%
+  select(id, sex, kernel95) %>%
+  group_by(sex) %>%
+  summarize(avg = mean(kernel95),
+            sd = sd(kernel95),
+            se = sd/sqrt(nrow(d))
+            )
+s
+```
+
+``` {r}
+p <- ggplot(data = d, aes(x = sex, y = kernel95)) +
+  geom_boxplot() +
+  geom_point() +
+  geom_jitter()
+p
+```
+
+``` {r}
+males <- d %>% filter(sex == "M")
+females <- d %>% filter(sex == "F")
+
+n_boot <- 10000
+boot_males <- (do(n_boot) *
+                 mean(sample(
+                   males$kernel95,
+                   nrow(males),
+                   replace = TRUE))) %>%
+  pull(mean)
+histogram(boot_males)
+plotDist("norm", mean(boot_males), sd(boot_males), add = TRUE) # superimposes a normal distribution curve to see how "normal" your distribution is
+```
+
+``` {r}
+boot_females <- (do(n_boot) *
+                 mean(sample(
+                   females$kernel95,
+                   nrow(females),
+                   replace = TRUE))) %>%
+  pull(mean)
+histogram(boot_females)
+plotDist("norm", mean(boot_females), sd(boot_females), add = TRUE)
+```
+
+``` {r}
+m_males <- mean(boot_males)
+sd_males <- sd(boot_males)
+
+ci_boot_m <- quantile(boot_males, probs = c(0.025, 0.975))
+ci_norm_m <- m_males + qnorm(c(0.025, 0.975)) * sd_males
+```
+
+## The write code to do the following inferential analysis...
+
+Is there a significant difference in mean home range size of males and females?
+
+What is H(o)? What is H(a)?
+
+T = (mean of group 2 - mean of group 1 - expected difference)/sqrt((group 1 standard deviation)^2/n1 + (group 2 standard deviation)^2/n2)
+
+``` {r}
+t_num <- mean(males$kernel95) - mean(females$kernel95)
+t_denom <- sqrt(var(males$kernel95)/nrow(males) + var(females$kernel95)/nrow(females))
+t <- t_num/t_denom
+```
+
+``` {r}
+df_num <- (var(males$kernel95)/nrow(males) + var(females$kernel95)/nrow(females))^2
+df_denom <- ((var(males$kernel95)/nrow(males))^2)/(nrow(males)-1) + ((var(females$kernel95)/nrow(females))^2)/(nrow(females)-1)
+df <- df_num/df_denom
+```

@@ -1,0 +1,175 @@
+---
+title: "2026-03-05"
+format: html
+---
+
+## Permutation Distributions
+
+``` {r}
+library(tidyverse)
+library(dplyr)
+library(mosaic)
+library(infer)
+d <- tibble(read.csv("https://raw.githubusercontent.com/difiore/ada-datasets/refs/heads/main/tbs-2006-2008-ranges.csv"))
+
+```
+
+``` {r}
+n_perm <- 10000
+perm_diff <- vector()
+for(i in 1:n_perm) {
+  d %>%
+    mutate(sex = sample(sex)) %>%
+    summarize(diff = mean(kernel95[sex == "M"]) - mean(kernel95[sex == "F"])) %>%
+    pull(diff) -> perm_diff[[i]]
+}
+histogram(perm_diff)
+```
+
+permuted difference between means
+
+``` {r}
+perm_diff <- {
+  do(n_perm) * d %>%
+    mutate(sex = sample(sex)) %>%
+    summarize(diff = mean(kernel95[sex == "M"]) - mean(kernel95[sex == "F"]))
+} %>%
+  pull(diff)
+histogram(perm_diff)
+```
+
+``` {r}
+(p_val <- sum(abs(perm_diff) >= abs(obs_diff))/length(perm_diff)) # how many times is our permuted value bigger than our observed value?
+# or
+(p_val <- mean(abs(perm_diff) >= abs(obs_diff)))
+```
+
+``` {r}
+d <- d %>%
+  specify(formula = kernel95 ~ sex)
+d <- d %>%
+  hypothesize(null = "independence")
+perm <- d %>%
+  generate(reps = 1000, type = "permute")
+perm_diff <- perm %>%
+  calculate(stat = "diff in means", order = c("M", "F"))
+obs_diff <- d %>%
+  summarize(diff = mean(kernel95[sex == "M"]) - mean(kernel95[sex == "F"])) %>%
+  pull(diff)
+obs_diff <- d %>%
+  specify(kernel95 ~ sex) %>%
+  calculate(stat = "diff in means", order = c("M", "F"))
+visualize(perm_diff, bins = 20) +
+  shade_p_value(obs_stat = obs_diff, direction = "both")
+```
+
+``` {r}
+get_p_value(perm_diff, obs_diff, direction = "both")
+```
+
+# Class 13: Introduction to Regression
+
+``` {r}
+library(lmodel2)
+library(sjPlot)
+library(broom)
+library(tidyverse)
+library(manipulate)
+library(patchwork)
+library(infer)
+```
+
+## Regression -- A common form of data modeling
+
+The basic premise of modeling is to explore the relationship between the outcome variable (y) and one or more explanatory variables (x)
+
+### Simple (general) linear regression
+
+Outcome is a continuous numerical variable, single predictor that is either numerical or categorical
+
+### Multiple (general) linear regression
+
+Outcome is a continuous numerical variable, multiple predictors that are either numerical or categorical
+
+### ANOVA/ANCOVA
+
+Focuses on categorical predictors
+
+ANOVA - one or more categorical independent variables
+
+ANCOVA - a combination or categorical and continuous independent variables
+
+### "Generalized" linear regression
+
+Allows for binary, categorical, count variables as outcomes
+
+## Before modeling, start with exploratory data analysis
+
+Univariate summary statistics, e.g. skinm() from {skimr}
+
+Bivariate summary statistics
+
+- Covariance expresses how much two numeric variables "change together" and whether that change is positive or negative
+
+- Correlation coefficient is a standardized form of the covariance that summarizes, on a scale from -1 to +1, both the strength and direction of a relationship
+
+- Covariance between two variables measured on a sample is the product of the deviations of each of those variables from their respective means divided by (sample size - 1)
+
+cov(x, y) = sum((x - mean(x))(y - mean(y))/(n - 1))
+
+- Correlation Coefficient two is a standardized covariance (divide by the product of the standard deviations of the two variables)
+
+cor(x, y) = cov(x, y)/(sd(x) * sd(y))
+
+### Programming exercise...
+
+``` {r}
+d <- read_csv("https://raw.githubusercontent.com/difiore/ada-datasets/refs/heads/main/zombies.csv", col_names = TRUE)
+head(d)
+```
+``` {r}
+z_plot <- ggplot(data = d, aes(x = weight, y = height)) +
+  geom_point()
+z_plot
+```
+
+``` {r}
+z_cov <- cov(d$weight, d$height)
+z_cov
+```
+
+``` {r}
+z_cor <- cor(d$weight, d$height)
+z_cor
+```
+
+``` {r}
+z_cov_hand <- sum(((d$height - mean(d$height)(d$weight - mean(d$weight)))/(length(d$height) - 1)))
+z_cov_hand
+```
+
+## Main Purposes for Regression
+
+To use one or more variables to predict the value of an outcome variable y
+
+To explicitly describe and quantify the relationship between the outcome variable y and a set of explanatory variables x, determine the significance of any relationships, generate measures summarizing these relationships (e.g. regression coefficients), and (possibly) identify causal relatinoships between the variables
+
+To develop and choose among different models of the relationships between the variables of interest
+
+To do analyses of covariation among sets of variables to identify/explore their relative explanatory power
+
+## Formula notation for regression
+
+We typically model the outcome variable y "as a linear function" of the explanatory/predictor variables
+
+y(i) = beta(0) + beta(1)chi(i) + epsilon(i)
+
+The beta values in this equation arerreferred to as "regression coefficients", and it is those coefficients that our analysis is trying to estimate, while minimizing, according to some criterion, the error term
+
+y(hat) = beta(1)x + beta(0)
+
+## One common criterion is ORDINARY LEAST SQUARES
+
+We want to find coefficients that minimize "the residuals", i.e., the difference between observed and expected y values
+
+sum(y - y(hat)^2)

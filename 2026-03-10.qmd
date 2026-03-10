@@ -1,0 +1,109 @@
+---
+title: "2026-03-10"
+format: html
+---
+
+# Class 13
+
+## Regression
+
+``` {r}
+library(tidyverse)
+d <- read_csv("https://raw.githubusercontent.com/difiore/ada-datasets/main/zombies.csv", col_names = TRUE)
+head(d)
+```
+
+``` {r}
+m <- lm(height ~ weight, data = d) # height = y, weight = x
+m
+```
+
+``` {r}
+summary(m)
+```
+
+``` {r}
+beta1 <- cov(d$height, d$weight)/var(d$weight)
+beta1 # slope
+```
+
+``` {r}
+beta0 <- mean(d$height) - beta1 * mean(d$weight)
+beta0 # intercept
+```
+
+``` {r}
+s <- lm(data = d, ECV ~ group_size)
+s
+```
+
+``` {r}
+d <- read_csv("https://raw.githubusercontent.com/difiore/ada-datasets/refs/heads/main/comparative_primate_sexuality_data.csv", col_names = TRUE)
+ggplot(data = d, aes(x = log(Body_mass_male_mean), y = log(Combined_testis_mass))) +
+  geom_point(na.rm = TRUE)
+```
+
+``` {r}
+t <- d %>%
+  filter(!is.na(Combined_testis_mass))
+beta1 <- cov(log(t$Body_mass_male_mean), log(t$Combined_testis_mass))/var(log(t$Body_mass_male_mean)) # body mass is predictor
+beta1
+```
+
+``` {r}
+names(m)
+```
+
+``` {r}
+broom::tidy(m)
+```
+
+``` {r}
+confint(m)
+```
+
+``` {r}
+broom::glance(m)
+```
+
+``` {r}
+library(lmodel2)
+```
+
+``` {r}
+m <- lm(log(d$Combined_testis_mass) ~ log(d$Body_mass_male_mean))
+plot(x = d$weight, y = d$height)
+abline(m1, col = "blue")
+```
+
+``` {r}
+d <- read_csv("https://raw.githubusercontent.com/difiore/ada-datasets/refs/heads/main/Street_et_al_2017.csv", col_names = TRUE)
+m <- lm(formula = ECV ~ Group_size, data = d)
+m
+```
+
+``` {r}
+ggplot(data = d, aes(x = Group_size, y = ECV)) +
+  geom_point(na.rm = TRUE)
+```
+
+``` {r}
+ggplot(data = d, aes(x = Longevity, y = ECV)) +
+  geom_point(na.rm = TRUE)
+```
+
+``` {r}
+ggplot(data = d, aes(x = d$Sex_maturity, y = ECV)) +
+  geom_point(na.rm = TRUE)
+```
+
+``` {r}
+ggplot(data = d, aes(x = log(Repro_lifespan, y = log(ECV))) +
+  geom_point(na.rm = TRUE)
+```
+
+``` {r}
+h <- d %>%
+  filter(Taxonomic_group = ) %>%
+d <- lm(ECV ~ Group_size, h)
+```

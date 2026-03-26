@@ -1,0 +1,147 @@
+---
+title: "2026-03-12"
+format: html
+---
+
+## Maximum Likelihood Estimation
+
+Probability of seeing a value (mu) according to its mean (x) and standard deviation (sigma^2)
+
+AKA a probability density function
+
+P(x|mu, sigma) = (1/sqrt(2 * pi * sigma^2)) * e^(-(x - mu)^2/(2 * sigma^2))
+
+``` {r}
+library(bbmle)
+library(maxLik)
+```
+
+``` {r}
+val <- c(41, 70, 10)
+mean <- 50
+sd <- 10
+l <- dnorm(val, mean = mean, sd = sd) # vector of likelihoods of each value
+l
+```
+
+``` {r}
+l[1] * l[2] * l[3] # product of likelihoods
+```
+
+``` {r}
+ll <- log(l) # can be easier to work with
+ll[1] + ll[2] + ll[3] # product of likelihoods = sum of log likelihoods
+```
+
+``` {r}
+set.seed(0)
+d <- rnorm(100, 50, 10)
+head(d)
+```
+
+``` {r}
+l <- dnorm(d, mean, sd)
+ll <- log(l)
+ll <- sum(ll)
+l <- exp(ll)
+l
+```
+
+``` {r}
+mean <- 65
+sd <- 20
+l <- dnorm(d, mean, sd)
+ll <- log(l)
+ll <- sum(ll)
+l <- exp(ll)
+l
+```
+
+``` {r}
+minuslog1 <- function(mu, sigma, verbose = TRUE) { # automatically produces log likelihood as a positive number
+  ll = sum(dnorm(d, mean = mu, sd = sigma, log = TRUE))
+  nll <- -1 * ll
+  return(nll)
+}
+m <- mle2( # maximum likelihood estimate 2
+  minuslogl = minuslog1,
+  start = list(mu = 0, sigma = 1),
+  method = "SANN" # simulated annealing method of optimization, one of several options
+)
+summary(m)
+```
+
+``` {r}
+library(tidyverse)
+d <- read_csv("https://raw.githubusercontent.com/difiore/ada-datasets/main/zombies.csv", col_names = TRUE)
+m <- lm(data = d, height ~ weight) # makes  a linear model of the data (line of best fit, mean, etc)
+SSY <- sum((m$model$height - mean(m$model$height))^2) # height - mean(height); number of degrees of freedom for the total sum of squares (SSY) is n - 1
+SSR <- sum((m$fitted.values - mean(m$model$height))^2) # degrees of freedom for regression sum of squares (SSR) is equal to the number of predictor variables (p)
+SSE <- sum((m$model$height - m$fitted.values)^2) # df for the error sum of squares (SSE) is equal to n - (p + 1) (AKA n - p - 1)
+df_y <- nrow(d) - 1
+df_regression <- p
+df_error <- nrow(d) - p - 1
+
+MSY <- SSY/df_y
+MSR <- SSR/df_regression
+MSE <- SSE/df_error
+```
+
+## ANOVA tables: F ratio
+
+fratio = MSR/MSE
+
+ratio of the variance explained by the regression model to the remaining unexplained variance
+
+We can then test the overall significance of our regression model by evaluating our F ratio test statistic against an F distribution
+
+``` {r}
+for(i in 1:3) {
+  cat("meow ")
+  for(j in 1:3) {
+    cat("Meow ")
+    for(k in 1:3) {
+      cat("mEow ")
+      for(l in 1:3) {
+        cat("meOw ")
+        for(m in 1:3) {
+          cat("meoW ")
+          for(n in 1:3) {
+            cat("MEow ")
+            for(o in 1:3) {
+              cat("MeOw ")
+              for(p in 1:3) {
+                cat("MeoW ")
+                for(q in 1:3) {
+                  cat("mEOw ")
+                  for(r in 1:3) {
+                    cat("mEoW ")
+                    for(s in 1:3) {
+                      cat("meOW ")
+                      for(t in 1:3) {
+                        cat("MEOw ")
+                        for(u in 1:3) {
+                          cat("MEoW ")
+                          for(v in 1:3) {
+                            cat("MeOW ")
+                            for(w in 1:3) {
+                              cat("mEOW ")
+                              for(x in 1:3) {
+                                cat("MEOW ")
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+```

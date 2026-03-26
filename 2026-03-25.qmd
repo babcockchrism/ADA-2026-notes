@@ -1,0 +1,112 @@
+---
+title: "2026-03-24"
+format: html
+---
+``` {r}
+d <- read.csv("https://raw.githubusercontent.com/difiore/ada-datasets/refs/heads/main/KamilarAndCooperData.csv")
+plot <- ggplot(data = d, aes(x = MaxLongevity_m, y = Body_mass_female_mean)) +
+  geom_point()
+plot
+```
+
+``` {r}
+plot_log <- ggplot(data = d, aes(x = MaxLongevity_m, y = log(Body_mass_female_mean))) +
+  geom_point()
+plot_log
+```
+
+``` {r}
+plot_loglog <- ggplot(data = d, aes(x = log(MaxLongevity_m), y = log(Body_mass_female_mean))) +
+  geom_point()
+plot_loglog
+```
+
+``` {r}
+d <- d %>%
+  filter(!is.na(MaxLongevity_m) & !is.na(Body_mass_female_mean))
+lm <- lm(Body_mass_female_mean ~ MaxLongevity_m, d)
+lmlog <- lm(log(Body_mass_female_mean) ~ MaxLongevity_m, d)
+lmloglog <- lm(log(Body_mass_female_mean) ~ log(MaxLongevity_m), d)
+```
+
+``` {r}
+res <- histogram(lm$residuals, nint = 20)
+res
+```
+
+``` {r}
+reslog <- histogram(lmlog$residuals, nint = 20)
+reslog
+```
+
+``` {r}
+resloglog <- histogram(lmloglog$residuals, nint = 20)
+resloglog
+```
+
+``` {r}
+library(car)
+qqPlot(lm$residuals)
+```
+
+``` {r}
+qqPlot(lmlog$residuals)
+```
+
+``` {r}
+qqPlot(lmloglog$residuals)
+```
+
+``` {r}
+shapiro.test(lm$residuals)
+```
+
+``` {r}
+shapiro.test(lmlog$residuals)
+```
+
+``` {r}
+shapiro.test(lmloglog$residuals)
+```
+
+# Class 17
+
+``` {r}
+library(tidyverse)
+d <- read_csv("https://raw.githubusercontent.com/difiore/ada-datasets/main/AVONETdataset1.csv")
+keep <- c("Species1", "Family1", "Order1", "Beak.Length_Culmen", "Beak.Width", "Beak.Depth", "Tarsus.Length", "Wing.Length", "Tail.Length", "Mass", "Habitat", "Migration", "Trophic.Level", "Trophic.Niche", "Primary.Lifestyle", "Min.Latitude", "Max.Latitude", "Centroid.Latitude", "Range.Size")
+d <- d %>%
+  select(all_of(keep))
+```
+
+``` {r}
+p1 <- ggplot(data = d %>% drop_na(Trophic.Level),
+             aes(x = Trophic.Level, y = log(Mass))) +
+  geom_boxplot() +
+  geom_jitter(alpha = 0.1)
+p1
+```
+
+``` {r}
+p2 <- ggplot(data = d %>% drop_na(Migration),
+             aes(x = as.factor(Migration), y = log(Mass))) +
+  geom_boxplot() +
+  geom_jitter(alpha = 0.1)
+p2
+```
+
+``` {r}
+d <- d %>% mutate(Migration = relevel(Migration, ref = "3"))
+m2 <- lm(log(Mass) ~ Migration, data = d)
+summary(m2)
+```
+
+``` {r}
+library(cowplot)
+density_p1 <- ggplot(data = d %>% drop_na(Trophic.Level),
+                     aes(x = log(Mass), fill = Trophic.Level)) +
+  geom_density(alpha = 0.5) +
+  coord_flip() +
+  theme_void()
+plot_grid(p1, density_p1, nrow = 1, rel_widths = c(2, 1))
+```

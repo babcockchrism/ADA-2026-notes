@@ -1,0 +1,118 @@
+---
+title: "2026-03-31"
+format: html
+---
+
+``` {r}
+library(tidyverse)
+d <- read_csv("https://raw.githubusercontent.com/difiore/ada-datasets/main/AVONETdataset1.csv")
+keep <- c("Species1", "Family1", "Order1", "Beak.Length_Culmen", "Beak.Width", "Beak.Depth", "Tarsus.Length", "Wing.Length", "Hand-Wing.Index", "Tail.Length", "Mass", "Habitat", "Migration", "Trophic.Level", "Trophic.Niche", "Primary.Lifestyle", "Min.Latitude", "Max.Latitude", "Centroid.Latitude", "Range.Size")
+d<- d %>%
+  select(all_of(keep)) %>%
+  mutate(Hand_Wing.Index = `Hand-Wing.Index`)
+a <- lm(log(Beak.Length_Culmen) ~ log(Mass), data = d)
+b <- lm(log(Tarsus.Length) ~ log(Mass), data = d)
+d <- d %>%
+  mutate(
+    relBeak = a$residuals,
+    relTarsus = b$residuals
+  )
+handWingPlot <- ggplot(data = d, aes(x = Primary.Lifestyle, y = Hand_Wing.Index)) +
+  geom_boxplot()
+relTarsusPlot <- ggplot(data = d, aes(x = Primary.Lifestyle, y = relTarsus)) +
+  geom_boxplot()
+relBeakPlot <- ggplot(data = d, aes(x = Primary.Lifestyle, y = relTarsus)) +
+  geom_boxplot()
+```
+
+``` {r}
+handWingPlot
+```
+
+``` {r}
+relTarsusPlot
+```
+
+``` {r}
+relBeakPlot
+```
+
+``` {r}
+pass <- d %>%
+  filter(Order1 == "Passeriformes")
+m1 <- aov(relBeak ~ Primary.Lifestyle, data = pass)
+m2 <- aov(relBeak ~ Trophic.Niche, data = pass)
+m1plot <- ggplot(data = pass, aes(x = Primary.Lifestyle, y = relBeak)) +
+  geom_boxplot()
+m2plot <- ggplot(data = pass, aes(x = Trophic.Niche, y = relBeak)) +
+  geom_boxplot()
+summary(m1)
+```
+
+``` {r}
+m1plot
+```
+
+``` {r}
+summary(m2)
+```
+
+``` {r}
+m2plot
+```
+
+## 2-Way ANOVA
+
+``` {r}
+m <- aov(relBeak ~ Primary.Lifestyle * Trophic.Level, data = pass)
+summary(m)
+```
+
+``` {r}
+library(sjPlot)
+plot_model(m, type = "emm", terms = c("Primary.Lifestyle", "Trophic.Level"))
+```
+
+``` {r}
+library(emmeans)
+emmip(m, Trophic.Level ~ Primary.Lifestyle, CIs = TRUE)
+```
+
+# Class 18 and 19
+
+``` {r}
+library(car)
+library(jtools)
+z <- read_csv("https://raw.githubusercontent.com/difiore/ada-datasets/main/zombies.csv")
+m <- lm(height ~ weight + age, data = z)
+summary(m)
+```
+
+``` {r}
+plot(m$model$weight, residuals(m))
+```
+
+``` {r}
+plot(m$model$age, residuals(m))
+```
+
+``` {r}
+plot(fitted(m), residuals(m))
+```
+
+``` {r}
+m <- lm(height ~ weight + age + gender, data = z)
+summary(m)
+```
+
+``` {r}
+plot(m$model$weight, residuals(m))
+```
+
+``` {r}
+plot(m$model$age, residuals(m))
+```
+
+``` {r}
+boxplot(m$residuals ~ m$model$gender)
+```

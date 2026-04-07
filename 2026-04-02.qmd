@@ -1,0 +1,96 @@
+---
+title: "2026-04-02"
+format: html
+---
+
+# Class 18 and 19
+
+``` {r}
+library(car)
+library(jtools)
+library(tidyverse)
+z <- read_csv("https://raw.githubusercontent.com/difiore/ada-datasets/main/zombies.csv")
+m <- lm(height ~ weight + age + gender, data = z)
+summary(m)
+```
+
+``` {r}
+vif(m)
+```
+
+``` {r}
+d <- read_csv("https://raw.githubusercontent.com/difiore/ada-datasets/main/AVONETdataset1.csv")
+keep <- c("Species1", "Family1", "Order1", "Beak.Length_Culmen", "Beak.Width", "Beak.Depth", "Tarsus.Length", "Wing.Length", "Hand-Wing.Index", "Tail.Length", "Mass", "Habitat", "Migration", "Trophic.Level", "Trophic.Niche", "Primary.Lifestyle", "Min.Latitude", "Max.Latitude", "Centroid.Latitude", "Range.Size")
+acc <- d %>%
+  filter(Order1 == "Accipitriformes")
+acc_lm <- lm(log(Range.Size) ~ log(Mass) + Primary.Lifestyle, data = acc)
+summary(acc_lm)
+```
+
+``` {r}
+unique(acc$Primary.Lifestyle)
+```
+
+``` {r}
+ci <- predict(m, newdata = data.frame(age = 29, gender = "Male", weight = 160), interval = "confidence", level = 0.95)
+ci
+```
+
+``` {r}
+pi <- predict(m, newdata = data.frame(age = 29, gender = "Male", weight = 160), interval = "prediction", level = 0.95)
+pi # larger range than confidence interval (ci predicts mean; pi predicts possible individual observation)
+```
+
+``` {r}
+effect_plot(m, pred = weight, plot.points = TRUE)
+```
+
+``` {r}
+library(sjPlot)
+plot_model(m, type = "pred", show.data = TRUE, terms = "weight")
+```
+
+``` {r}
+d <- read_csv("https://raw.githubusercontent.com/difiore/ada-datasets/main/AVONETdataset1.csv")
+keep <- c("Species1", "Family1", "Order1", "Beak.Length_Culmen", "Beak.Width", "Beak.Depth", "Tarsus.Length", "Wing.Length", "Hand-Wing.Index", "Tail.Length", "Mass", "Habitat", "Migration", "Trophic.Level", "Trophic.Niche", "Primary.Lifestyle", "Min.Latitude", "Max.Latitude", "Centroid.Latitude", "Range.Size")
+d<- d %>%
+  select(all_of(keep)) %>%
+  mutate(Hand_Wing.Index = `Hand-Wing.Index`)
+a <- lm(log(Beak.Length_Culmen) ~ log(Mass), data = d)
+b <- lm(log(Tarsus.Length) ~ log(Mass), data = d)
+d <- d %>%
+  mutate(
+    relBeak = a$residuals,
+    relTarsus = b$residuals
+  )
+m1 <- lm(data = d, relBeak ~ logRS * Migration)
+m2 <- lm(data = d, relbeak ~ logRS + Migration)
+anova(m2, m1, test = "F")
+```
+
+``` {r}
+nperm <- 100000
+poss <- vector(length = nperm)
+for(i in 1:nperm) {
+  if(i % (nperm/100) == 0) cat(100 * i/nperm, "percent done", "\n")
+  a <- 0
+  for(j in 1:180) {
+    b <- sample(1:10000, size = 1)
+    if(b >= 5286) {
+      a <- a + 1
+    }
+  poss[i] <- a
+  }
+}
+histogram(poss, nint = 180)
+```
+
+``` {r}
+se <- function(x) {
+  sd(x)/sqrt(length(x))
+}
+cat("mean: ", mean(poss), "\n")
+cat("sd: ", sd(poss), "\n")
+cat("se: ", se(poss), "\n")
+cat("ci: ", mean(poss) + qnorm(c(0.025, 0.975)) * sd(poss), "\n")
+```

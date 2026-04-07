@@ -1,0 +1,111 @@
+---
+title: "2026-04-07"
+format: html
+---
+
+# Class 20
+
+``` {r}
+library(tidyverse)
+library(MASS)
+library(AICcmodavg)
+library(MuMIn)
+d <- tibble(read_csv("https://raw.githubusercontent.com/difiore/ada-datasets/main/AVONETdataset1.csv"))
+d <- d %>%
+  dplyr::select(Species1, Family1, Order1, Beak.Length_Culmen, Beak.Width, Beak.Depth, Tarsus.Length, Wing.Length, Tail.Length, Mass, Habitat, Migration, Trophic.Level, Trophic.Niche, Min.Latitude, Max.Latitude, Centroid.Latitude, Range.Size, Primary.Lifestyle) %>%
+  mutate(logMass = log(Mass), logRS = log(Range.Size), logBeak = log(Beak.Length_Culmen), logTarsus = log(Tarsus.Length), Migration = as.factor(Migration))
+relBeak <- lm(logBeak ~ logMass, data = d)
+relTarsus <- lm(logTarsus ~ logMass, data = d)
+d <- d %>%
+  mutate(relBeak = relBeak$residuals, relTarsus = relTarsus$residuals)
+m1 <- lm(data = d, logBeak ~ logRS * Migration)
+m2 <- lm(data = d, logBeak ~ logRS + Migration)
+m3 <- lm(data = d, logBeak ~ logRS)
+m4 <- lm(data = d, logBeak ~ Migration)
+m5 <- lm(data = d, logBeak ~ 1)
+anova(m2, m1, test = "F")
+```
+
+``` {r}
+vars <- c("logBeak", "logRS", "Migration", "Trophic.Level", "Primary.Lifestyle", "relBeak", "relTarsus", "logTarsus")
+d_clean <- d %>%
+  dplyr::select(all_of(vars)) %>%
+  drop_na()
+m2 <- lm(data = d_clean, logBeak ~ logRS + Migration)
+m3 <- lm(data = d_clean, logBeak ~ logRS)
+anova(m3, m2, test = "F")
+```
+
+``` {r}
+relBeak ~ logRS + Migration + Trophic.Level + relTarsus + Primary.Lifestyle
+m_null <- lm(data = d_clean, relBeak ~ 1)
+add1(m_null, scope = .~. + logRS + relTarsus + Migration + Trophic.Level + Primary.Lifestyle, test = "F")
+```
+
+``` {r}
+m1 <- update(m_null, formula = .~. + Primary.Lifestyle)
+add1(m1, scope = .~. + logRS + relTarsus + Migration + Trophic.Level, test = "F")
+```
+
+``` {r}
+m2 <- update(m1, formula = .~. + Trophic.Level)
+add1(m2, scope = .~. + logRS + relTarsus + Migration, test = "F")
+```
+
+``` {r}
+m3 <- update(m2, formula = .~. + Migration)
+add1(m3, scope = .~. + logRS + relTarsus, test = "F")
+```
+
+``` {r}
+m_full <- lm(data = d_clean, relBeak ~ logRS + relTarsus + Migration + Trophic.Level + Primary.Lifestyle)
+drop1(m_full, test = "F")
+```
+
+``` {r}
+m1 <- update(m_full, formula = .~. - logRS)
+drop1(m1, test = "F")
+```
+
+``` {r}
+m2 <- update(m_full, formula = .~. - relTarsus)
+drop1(m2, test = "F")
+```
+
+``` {r}
+m_full <- lm(data = d_clean, relBeak ~ relTarsus + Migration + Trophic.Level + Primary.Lifestyle)
+s <- stepAIC(m_full, scope = .~., direction = "both")
+s
+```
+
+``` {r}
+m_null <- lm(data = d_clean, relBeak ~ 1)
+s <- stepAIC(m_null, scope = .~. + logRS + relTarsus + Migration + Trophic.Level + Primary.Lifestyle, direction = "both")
+s
+```
+
+``` {r}
+m_full <- lm(data = d_clean, relBeak ~ logRS + Migration + Trophic.Level + logTarsus + Primary.Lifestyle, na.action = na.fail)
+mods <- dredge(m_full)
+mods
+```
+
+``` {r}
+mods.avg <- summary(model.avg(mods, subset = delta <= 4, fit = TRUE))
+mods.avg$msTable
+```
+
+``` {r}
+confint(mods.avg)
+```
+
+``` {r}
+plot(mods.avg, full = TRUE)
+```
+
+``` {r}
+d <- read_tsv("https://raw.githubusercontent.com/difiore/ada-datasets/main/Mammal_lifehistories_v2.txt")
+d <- d %>%
+  mutate()
+```
+

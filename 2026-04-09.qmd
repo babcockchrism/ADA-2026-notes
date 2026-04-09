@@ -1,0 +1,93 @@
+---
+title: "2026-04-09"
+format: html
+---
+
+# Class 21
+
+``` {r}
+library(tidyverse)
+library(generics)
+f <- tibble(read_csv("https://raw.githubusercontent.com/difiore/ada-datasets/refs/heads/main/titanic_train.csv"))
+f <- f %>%
+  select(-c("Name", "PassengerId", "Ticket", "Cabin")) %>%
+  mutate(Sex = as.factor(Sex), Embarked = as.factor(Embarked), Pclass = as.factor(Pclass))
+ggplot(f, aes(x = Age, y = Survived)) +
+  geom_jitter(na.rm = TRUE)
+```
+
+``` {r}
+ggplot(f, aes(x = Sex, y = Survived)) +
+  geom_jitter(na.rm = TRUE)
+```
+
+``` {r}
+ggplot(f, aes(x = Pclass, y = Survived)) +
+  geom_jitter(na.rm = TRUE)
+```
+
+``` {r}
+m <- glm(data = f, Survived ~ Sex, family = binomial) # negative intercept for male means the log of the odds of males surviving is lower than females
+summary(m)
+```
+
+``` {r}
+coefs <- tidy(m) %>% select(coefficients)
+```
+
+``` {r}
+surv <- f %>%
+  group_by(Sex) %>%
+  summarize(surv = mean(Survived))
+surv
+```
+
+``` {r}
+library(effects)
+plot(allEffects(m))
+```
+
+``` {r}
+library(jtools)
+effect_plot(m, pred = Sex)
+```
+
+``` {r}
+x <- data.frame(Sex = c("male", "female"))
+log_odds <- predict(m, newdata = x)
+odds <- exp(log_odds)
+y <- predict(m, newdata = x, type = "response", se.it = TRUE)
+```
+
+``` {r}
+m <- glm(Survived ~ Age, data = f, family = "binomial")
+summary(m)
+```
+
+``` {r}
+m <- glm(Survived ~ Age * Sex, data = f, family = "binomial")
+summary(m)
+```
+
+``` {r}
+library(lmtest)
+lrtest(m)
+```
+
+``` {r}
+d <- read_csv("https://raw.githubusercontent.com/difiore/ada-datasets/refs/heads/main/woollydata.csv")
+p <- ggplot(data = d, aes(age, y = success)) +
+  geom_point() +
+  xlab("Age") +
+  ylab("Mating Success")
+p
+```
+
+``` {r}
+glm <- glm(data = d, success ~ age, family = "poisson")
+summary(glm)
+```
+``` {r}
+results <- tidy(glm, conf.int = TRUE, conf.level = 0.95)
+results
+```

@@ -1,0 +1,117 @@
+---
+title: "2026-04-14"
+format: html
+---
+
+``` {r}
+library(tidyverse)
+d <- tibble(read_csv("https://raw.githubusercontent.com/difiore/ada-datasets/refs/heads/main/woollydata.csv"))
+fuller <- glm(data = d, success ~ age, family = "poisson")
+reduced <- glm(data = d, success ~ 1)
+fuller
+```
+
+``` {r}
+reduced
+```
+
+``` {r}
+library(lmtest)
+lrtest(reduced, fuller)
+Gsq <- reduced$deviance - fuller$deviance
+p <- 1 - pchisq(Gsq, df = 1)
+p <- pchisq(Gsq, df = 1, lower.tail = FALSE)
+anova(reduced, fuller, test = "Chisq")
+```
+
+``` {r}
+# observed LRT statistic
+Gsq <- reduced$deviance - fuller$deviance
+# or
+Gsq <- 2 * (logLik(fuller) - logLik(reduced))
+# extract the null model's fitted parameter
+lambda <- exp(coef(reduced)[1])
+# need to exp() because fitted parameters is on log scale
+lambda
+```
+
+``` {r}
+set.seed(1)
+boots <- 10000
+Gsq_boot <- numeric()
+#for(i in 1:boots) {
+  y <- rpois(nrow(d), lambda = lambda)
+  fuller <- glm(y ~ d$age, family = "poisson")
+  reduced <- glm(y ~ 1, family = "poisson")
+  Gsq_boot[i] <- reduced$deviance - fuller$deviance
+}
+p <- mean(Gsq_boot >= Gsq)
+p
+```
+
+``` {r}
+meow <- c("Meow", "mEow", "meOw", "meoW", "MEow", "MeOw", "MeoW", "mEOw", "mEoW", "meOW", "MEOw", "MEoW", "MeOW", "mEOW", "MEOW")
+for(i in 1:1000000000) {
+  cat(sample(meow, 1), " ")
+}
+```
+
+# Class 23
+
+## Mixed Effects Modeling
+
+``` {r}
+library(ggplot2)
+d <- tibble(read_csv("https://raw.githubusercontent.com/difiore/ada-datasets/refs/heads/main/chimpgrooming.csv"))
+ggplot(data = d, aes(x = subject, y = duration)) +
+  geom_boxplot()
+```
+
+``` {r}
+ggplot(data = d, aes(x = reprocondition, y = duration)) +
+  geom_boxplot()
+```
+
+``` {r}
+library(lme4)
+m <- lmer(data = d, duration ~ reprocondition + parity)
+summary(m)
+```
+
+``` {r}
+fuller <- lmer(data = d, duration ~ reprocondition + parity + (1|subject), REML = FALSE)
+reduced <- lmer(data = d, duration ~ parity + (1|subject), REML = FALSE)
+fuller
+```
+
+``` {r}
+reduced
+```
+
+``` {r}
+lrtest(reduced, fuller)
+```
+
+``` {r}
+m <- lmer(data = d, duration ~ reprocondition + parity + (1 + reprocondition|subject) + (1 + parity|subject), REML = FALSE)
+summary(m)
+```
+
+``` {r}
+# model with full fixed effects
+full <- lmer(data = d, duration ~ reprocondition + parity + (1 + reprocondition|subject) + (1 + parity|subject), REML = FALSE)
+# model without reproductive condition
+
+# model without parity
+
+# p value for reproductive condition
+
+# p value for parity
+```
+
+``` {r}
+null <- lmer(data = d, duration ~ (1 + reprocondition|subject) + (1 + parity|subject), REML = FALSE)
+library(AICcmodavg)
+aic_table <- aictab(list(full, minusRC, minusP, null), modnames = c("full", "minusRC", "minusP", "null"))
+```
+
